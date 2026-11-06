@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ตารางผู้ใช้งานระบบ
+model User {
+  id        String          @id @default(uuid())
+  email     String          @unique
+  name      String?
+  setting   ReaderSetting?  // ความสัมพันธ์แบบ 1 ต่อ 1 กับการตั้งค่าหน้าจอ
+  books     Book[]          // ความสัมพันธ์แบบ 1 ต่อ หลาย กับหนังสือในชั้นหนังสือ
+  createdAt DateTime        @default(now())
+}
+
+// ตารางเก็บค่าการตั้งค่าหน้าจอ
+model ReaderSetting {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bgColor     String   @default("#fdf6e3")
+  fontSize    Int      @default(20)
+  fontFamily  String   @default("sans-serif")
+  soundTrack  String   @default("rain")
+}
+
+// ตารางเก็บข้อมูลหนังสือในชั้นหนังสือ (Bookshelf)
+model Book {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
